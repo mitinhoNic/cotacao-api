@@ -6,7 +6,6 @@ const router = new Router();
 router.get('/', cotPescado.index);
 router.get('/busca', cotPescado.busca);
 router.get('/date', cotPescado.date);
-router.get('/available-dates', cotPescado.availableDates);
 router.get('/precos', cotPescado.precos);
 router.get('/pescados', cotPescado.pescados);
 
