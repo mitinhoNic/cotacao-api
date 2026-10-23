@@ -1,7 +1,6 @@
 // ------------------------ SCRIPT PARA AS REQUISIÇÕES -----------------------------
 
 const urlAPI = 'https://cota-pesca.pescarte.org.br';
-// const urlAPI = 'http://localhost';
 
 let globalPescadosData = [];
 let chartRendered = false;
@@ -16,42 +15,11 @@ function initRequests() {
     .then(response => response.json())
     .then(token => {
       // Fazendo a requisição GET com o token de autenticação
-      getDataFonte(token);
-      getAvailableDates();
+      getDataFonte(token)
     })
     .catch(error => {
       // Lida com erros da requisição
       console.error('Erro na requisição:', error);
-    });
-}
-
-function getAvailableDates(fonte) {
-    const fonteQuery = fonte ? `?fonte=${encodeURIComponent(fonte)}` : '';
-
-    fetch(`${urlAPI}/auth`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(token => {
-        return fetch(`${urlAPI}/cotPescados/available-dates${fonteQuery}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    })
-    .then(response => response.json())
-    .then(dates => {
-        if (window.MultiDate && typeof window.MultiDate.setAvailableDates === 'function') {
-            window.MultiDate.setAvailableDates(dates);
-        }
-    })
-    .catch(error => {
-        console.error('Erro ao carregar datas disponíveis:', error);
     });
 }
 
@@ -99,15 +67,6 @@ function insertFonte(fontes) {
       listFonts.append(`
         <option value="${fonte}">${fonteUpper}</option>
       `)
-  });
-
-  listFonts.on('change', function() {
-      const fonte = $(this).val();
-      if (window.MultiDate && typeof window.MultiDate._clearStartDate === 'function') {
-          window.MultiDate._clearStartDate();
-          window.MultiDate._clearEndDate();
-      }
-      getAvailableDates(fonte);
   });
 }
 function getPescados() {
@@ -176,22 +135,23 @@ function insertPescados(arrayPesc) {
 }
 
 function convertDate() {
-  var dataIni = $("#start_date")[0].value.trim();
-  var dataFim = $("#end_date")[0].value.trim();
+  var dataIni = $("#start_date")[0].value;
+  var dataFim = $("#end_date")[0].value;
+  
+  
+  var dataUrl = ''
+    if(dataIni.includes("De:")){
+      dataIni = dataIni.replace("De: ", "")
+      dataIni = converterFormatoData(dataIni);
+      dataFim = dataFim.replace("Até: ", "")
+      dataFim = converterFormatoData(dataFim);
+      dataUrl = `inicio=${dataIni}&fim=${dataFim}`
+    }else{
+      dataIni = converterFormatoData(dataIni);
+      dataUrl = `inicio=${dataIni}&fim=${dataIni}`
+    }
 
-  if (!dataIni) {
-    return '';
-  }
-
-  var formatValue = function(value) {
-    value = value.replace("De: ", "").replace("Até: ", "").trim();
-    return converterFormatoData(value);
-  };
-
-  var inicio = formatValue(dataIni);
-  var fim = dataFim ? formatValue(dataFim) : inicio;
-
-  return `inicio=${inicio}&fim=${fim}`;
+  return dataUrl;
 }
 
 function converterFormatoData(data) {
